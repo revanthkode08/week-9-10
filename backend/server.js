@@ -10,13 +10,29 @@ import cors from "cors";
 
 config(); //process.env
 
+// Debug: Log loaded environment variables
+console.log("✓ Loaded DB_URL:", process.env.DB_URL ? "✓ Set" : "✗ Missing");
+console.log("✓ Loaded PORT:", process.env.PORT);
+console.log("✓ Loaded JWT_SECRET:", process.env.JWT_SECRET ? "✓ Set" : "✗ Missing");
+
 //Create express application - restarting to load .env
 const app = exp();
+
+// Set PORT with fallback
+const PORT = process.env.PORT || 10000;
+
 app.use(cors({ 
   origin: function (origin, callback) {
+    // Allow localhost for development
     if (!origin || /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) {
       callback(null, true);
-    } else {
+    } 
+    // Allow Render deployment domain (e.g., https://your-frontend.onrender.com)
+    // Update this with your actual frontend URL
+    else if (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL) {
+      callback(null, true);
+    }
+    else {
       callback(new Error('Not allowed by CORS'));
     }
   }, 
@@ -36,13 +52,20 @@ app.use("/common-api", commonRouter);
 //connect to db
 const connectDB = async () => {
   try {
+    if (!process.env.DB_URL) {
+      throw new Error("DB_URL environment variable is not set!");
+    }
+    
     await connect(process.env.DB_URL);
-    console.log("DB connection success");
+    console.log("✓ DB connection success");
 
     //start http server
-    app.listen(process.env.PORT, () => console.log(`server started on port ${process.env.PORT}`));
+    app.listen(PORT, () => {
+      console.log(`✓ Server started on port ${PORT}`);
+    });
   } catch (err) {
-    console.log("Err in DB connection", err);
+    console.error("✗ Error in DB connection:", err.message);
+    process.exit(1);
   }
 };
 
