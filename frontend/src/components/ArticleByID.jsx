@@ -102,7 +102,7 @@ function ArticleByID() {
   const addComment = async (commentObj) => {
     //add articleId and user
     commentObj.articleId = article._id;
-    commentObj.user = user._id;
+    commentObj.user = user?.userId || user?._id;
     console.log(commentObj);
     try {
       let res = await axios.put(`${import.meta.env.VITE_API_URL}/user-api/articles`, commentObj, { withCredentials: true });
