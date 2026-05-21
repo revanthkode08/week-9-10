@@ -29,7 +29,15 @@ function UserProfile() {
     const getArticles = async () => {
       setLoading(true);
       try {
-        const res = await axios.get("https://week-9-10-kn3e.onrender.com/user-api/articles", { withCredentials: true });
+        const token = localStorage.getItem("token");
+
+        const res = await axios.get(
+          "https://week-9-10-kn3e.onrender.com/user-api/articles",
+          {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+            withCredentials: true,
+          }
+        );
 
         setArticles(res.data.payload);
       } catch (err) {

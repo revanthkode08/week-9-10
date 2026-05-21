@@ -31,13 +31,25 @@ function WriteArticle() {
   const submitArticle = async (articleObj) => {
     setLoading(true);
 
+    // ensure we have a valid user
+    if (!currentUser) {
+      toast.error("Please login again");
+      setLoading(false);
+      return;
+    }
+
     //add authorId to articleObj
-    articleObj.author=currentUser._id;
+    articleObj.author = currentUser._id;
     try {
+      const token = localStorage.getItem("token");
+
       await axios.post(
-        "https://week-9-10-kn3e.onrender.com/author-api/articles",
+        `${import.meta.env.VITE_API_URL}/author-api/articles`,
         articleObj,
-        { withCredentials: true }
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          withCredentials: true,
+        }
       );
 
       toast.success("Article published successfully!");

@@ -1,6 +1,11 @@
 import { create } from "zustand";
 import axios from "axios";
 
+// Ensure axios points to the deployed backend by default (can be overridden by VITE env)
+axios.defaults.baseURL = import.meta.env.VITE_API_URL || "https://week-9-10-kn3e.onrender.com";
+// Send cookies by default to support cookie-based auth; Authorization header is also supported
+axios.defaults.withCredentials = true;
+
 export const useAuth = create((set) => ({
   currentUser: null,
   loading: false,
@@ -12,9 +17,21 @@ export const useAuth = create((set) => ({
       //set loading true
       set({ loading: true, error: null });
       //make api call
-      let res = await axios.post("https://week-9-10-kn3e.onrender.com/common-api/login", userCredObj, { withCredentials: true });
-      // console.log("res is ", res);
-      //update state
+      let res = await axios.post(
+        `${import.meta.env.VITE_API_URL}/common-api/login`,
+        userCredObj,
+        { withCredentials: true }
+      );
+
+      // If server returns a token in body, set Authorization header for subsequent requests
+      const token = res.data?.token;
+      if (token) {
+        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+        // persist token locally for page reloads
+        localStorage.setItem("token", token);
+      }
+
+      // update state
       set({
         loading: false,
         isAuthenticated: true,
@@ -36,7 +53,10 @@ export const useAuth = create((set) => ({
       //set loading state
       set({ loading: true, error: null });
       //make logout api req
-      await axios.get("https://week-9-10-kn3e.onrender.com/common-api/logout", { withCredentials: true });
+      await axios.get(`${import.meta.env.VITE_API_URL}/common-api/logout`, { withCredentials: true });
+      // clear local token and axios header
+      localStorage.removeItem("token");
+      delete axios.defaults.headers.common["Authorization"];
       //update state
       set({
         loading: false,
@@ -56,7 +76,18 @@ export const useAuth = create((set) => ({
   checkAuth: async () => {
     try {
       set({ loading: true });
-      const res = await axios.get("https://week-9-10-kn3e.onrender.com/common-api/check-auth", { withCredentials: true });
+
+      const token = localStorage.getItem("token");
+
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/common-api/check-auth`,
+        {
+          headers: token
+            ? { Authorization: `Bearer ${token}` }
+            : {},
+          withCredentials: true,
+        }
+      );
 
       set({
         currentUser: res.data.payload,
@@ -64,19 +95,17 @@ export const useAuth = create((set) => ({
         loading: false,
       });
     } catch (err) {
-      // If user is not logged in → do nothing
-      if (err.response?.status === 401) {
-        set({
-          currentUser: null,
-          isAuthenticated: false,
-          loading: false,
-        });
-        return;
-      }
-
-      // other errors
-      console.error("Auth check failed:", err);
-      set({ loading: false });
+      set({
+        currentUser: null,
+        isAuthenticated: false,
+        loading: false,
+      });
     }
   },
 }));
+
+// On module load, if token exists in localStorage, set axios auth header
+const existingToken = localStorage.getItem("token");
+if (existingToken) {
+  axios.defaults.headers.common["Authorization"] = `Bearer ${existingToken}`;
+}
