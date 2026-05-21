@@ -34,7 +34,7 @@ app.use(
   })
 );
 
-app.options("*", cors());
+
 
 //add body parser middleware
 app.use(exp.json());
