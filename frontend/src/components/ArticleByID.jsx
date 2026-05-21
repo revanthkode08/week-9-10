@@ -100,13 +100,18 @@ function ArticleByID() {
 
   //post comment by user
   const addComment = async (commentObj) => {
-    //add artcileId
+    //add articleId and user
     commentObj.articleId = article._id;
+    commentObj.user = user._id;
     console.log(commentObj);
-    let res = await axios.put(`${import.meta.env.VITE_API_URL}/user-api/articles`, commentObj, { withCredentials: true });
-    if (res.status === 200) {
-      toast.success(res.data.message);
-      setArticle(res.data.payload);
+    try {
+      let res = await axios.put(`${import.meta.env.VITE_API_URL}/user-api/articles`, commentObj, { withCredentials: true });
+      if (res.status === 200) {
+        toast.success(res.data.message);
+        setArticle(res.data.payload);
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to add comment");
     }
   };
 
