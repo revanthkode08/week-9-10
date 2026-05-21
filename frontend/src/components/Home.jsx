@@ -1,7 +1,22 @@
-import React from 'react';
-import { Link } from 'react-router';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router';
+import axios from 'axios';
 
 function Home() {
+  const [articles, setArticles] = useState([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchArticles = async () => {
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/common-api/articles`);
+        setArticles(res.data.payload);
+      } catch (err) {
+        console.error("Failed to fetch articles:", err);
+      }
+    };
+    fetchArticles();
+  }, []);
   return (
     <div className="relative w-full overflow-hidden flex flex-col justify-center items-center py-20 lg:py-32">
       {/* Container */}
@@ -59,18 +74,41 @@ function Home() {
         <h2 className="text-3xl lg:text-4xl font-extrabold tracking-widest text-white mb-10 uppercase">
           LATEST ARTICLES
         </h2>
-        {/* Placeholder for articles */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="bg-[#1a1a24] rounded-sm p-4 border border-gray-800 h-64 flex items-center justify-center hover:border-pink-500 transition-colors duration-300 cursor-pointer shadow-lg group">
-            <span className="text-gray-500 font-bold tracking-widest group-hover:text-pink-400 transition-colors">ARTICLE 1</span>
+        
+        {articles.length === 0 ? (
+          <p className="text-gray-500 text-center py-10">No articles available at the moment.</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {articles.map((article) => (
+              <div 
+                key={article._id}
+                onClick={() => navigate(`/article/${article._id}`, { state: article })}
+                className="bg-[#1a1a24] rounded-sm p-6 border border-gray-800 h-64 flex flex-col justify-between hover:border-pink-500 transition-colors duration-300 cursor-pointer shadow-lg group"
+              >
+                <div>
+                  <span className="text-xs text-pink-500 font-bold tracking-wider uppercase mb-2 block">{article.category}</span>
+                  <h3 className="text-xl font-bold text-white group-hover:text-pink-400 transition-colors line-clamp-2 mb-3">
+                    {article.title}
+                  </h3>
+                  <p className="text-gray-400 text-sm line-clamp-3">
+                    {article.content}
+                  </p>
+                </div>
+                <div className="flex items-center justify-between mt-4 border-t border-gray-800 pt-4">
+                  <span className="text-xs text-gray-500 font-bold tracking-widest">
+                    BY {article.author?.firstName?.toUpperCase() || "AUTHOR"}
+                  </span>
+                  <span className="text-xs text-gray-600">
+                    {new Date(article.createdAt).toLocaleDateString("en-IN", {
+                      timeZone: "Asia/Kolkata",
+                      dateStyle: "medium",
+                    })}
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
-          <div className="bg-[#1a1a24] rounded-sm p-4 border border-gray-800 h-64 flex items-center justify-center hover:border-pink-500 transition-colors duration-300 cursor-pointer shadow-lg group">
-            <span className="text-gray-500 font-bold tracking-widest group-hover:text-pink-400 transition-colors">ARTICLE 2</span>
-          </div>
-          <div className="bg-[#1a1a24] rounded-sm p-4 border border-gray-800 h-64 flex items-center justify-center hover:border-pink-500 transition-colors duration-300 cursor-pointer shadow-lg group hidden md:flex">
-            <span className="text-gray-500 font-bold tracking-widest group-hover:text-pink-400 transition-colors">ARTICLE 3</span>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import exp from "express";
 import { authenticate } from "../services/authService.js";
 import { UserTypeModel } from "../models/UserModel.js";
+import { ArticleModel } from "../models/ArticleModel.js";
 import bcrypt from "bcryptjs";
 import { verifyToken } from "../middlewares/verifyToken.js";
 export const commonRouter = exp.Router();
@@ -78,4 +79,27 @@ commonRouter.get("/check-auth", verifyToken("USER","AUTHOR","ADMIN"), (req, res)
     message: "authenticated",
     payload: req.user
   });
+});
+
+//Read all active articles (publicly accessible for home page)
+commonRouter.get("/articles", async (req, res) => {
+  try {
+    const articles = await ArticleModel.find({ isArticleActive: true }).populate("author", "firstName lastName email profileImageUrl");
+    res.status(200).json({ message: "all articles", payload: articles });
+  } catch (err) {
+    res.status(500).json({ message: "error fetching articles", error: err.message });
+  }
+});
+
+//Read a single article by ID
+commonRouter.get("/article/:id", async (req, res) => {
+  try {
+    const article = await ArticleModel.findOne({ _id: req.params.id, isArticleActive: true }).populate("author", "firstName lastName email profileImageUrl");
+    if (!article) {
+      return res.status(404).json({ message: "Article not found" });
+    }
+    res.status(200).json({ message: "article found", payload: article });
+  } catch (err) {
+    res.status(500).json({ message: "error fetching article", error: err.message });
+  }
 });
