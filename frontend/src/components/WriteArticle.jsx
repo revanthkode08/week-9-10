@@ -35,7 +35,7 @@ function WriteArticle() {
     articleObj.author=currentUser._id;
     try {
       await axios.post(
-        "https://suntek-assignment-syl5.onrender.com/author-api/articles",
+        "https://week-9-10-kn3e.onrender.com/author-api/articles",
         articleObj,
         { withCredentials: true }
       );

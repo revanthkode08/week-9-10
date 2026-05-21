@@ -5,8 +5,13 @@ config();
 export const verifyToken = (...allowedRoles) => {
   return async (req, res, next) => {
     try {
-      // Read token from cookie
-      const token = req.cookies.token;
+      // Read token from cookie OR Authorization header
+      let token = null;
+      if (req.cookies && req.cookies.token) token = req.cookies.token;
+      else if (req.headers && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+        token = req.headers.authorization.split(' ')[1];
+      }
+
       if (!token) {
         return res.status(401).json({ message: "Unauthorized. Please login" });
       }
@@ -31,7 +36,9 @@ export const verifyToken = (...allowedRoles) => {
       if (err.name === "JsonWebTokenError") {
         return res.status(401).json({ message: "Invalid token. Please login again" });
       }
-     // next(err);
+      // For other errors, return unauthorized to the client
+      console.error("verifyToken error:", err);
+      return res.status(401).json({ message: "Unauthorized. Please login." });
     }
   };
 };

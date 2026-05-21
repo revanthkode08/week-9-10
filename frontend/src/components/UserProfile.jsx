@@ -29,7 +29,7 @@ function UserProfile() {
     const getArticles = async () => {
       setLoading(true);
       try {
-        const res = await axios.get("https://suntek-assignment-syl5.onrender.com/user-api/articles", { withCredentials: true });
+        const res = await axios.get("https://week-9-10-kn3e.onrender.com/user-api/articles", { withCredentials: true });
 
         setArticles(res.data.payload);
       } catch (err) {

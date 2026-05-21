@@ -18,26 +18,24 @@ console.log("✓ Loaded JWT_SECRET:", process.env.JWT_SECRET ? "✓ Set" : "✗ 
 //Create express application - restarting to load .env
 const app = exp();
 
+// If behind a proxy (Render), trust the first proxy so req.secure and protocol detection work
+app.set('trust proxy', 1);
+
 // Set PORT with fallback
 const PORT = process.env.PORT || 10000;
 
-app.use(cors({ 
-  origin: function (origin, callback) {
-    // Allow localhost for development
-    if (!origin || /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) {
-      callback(null, true);
-    } 
-    // Allow Render deployment domain (e.g., https://your-frontend.onrender.com)
-    // Update this with your actual frontend URL
-    else if (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL) {
-      callback(null, true);
-    }
-    else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  }, 
-  credentials: true 
-}));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://week-9-10-six.vercel.app"
+    ],
+    credentials: true
+  })
+);
+
+app.options("*", cors());
+
 //add body parser middleware
 app.use(exp.json());
 //add cookie parser middleware

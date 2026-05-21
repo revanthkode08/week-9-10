@@ -33,7 +33,7 @@ function AuthorArticles() {
       setLoading(true);
 
       try {
-        const res = await axios.get(`https://suntek-assignment-syl5.onrender.com/author-api/articles/${user._id}`, { withCredentials: true });
+        const res = await axios.get(`https://week-9-10-kn3e.onrender.com/author-api/articles/${user._id}`, { withCredentials: true });
 
         setArticles(res.data.payload);
       } catch (err) {

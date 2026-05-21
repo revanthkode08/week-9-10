@@ -11,24 +11,36 @@ commonRouter.post("/login", async (req, res) => {
   let userCred = req.body;
   //call authenticate service
   let { token, user } = await authenticate(userCred);
-  //save tokan as httpOnly cookie
-  res.cookie("token", token, {
+  // Determine cookie settings depending on environment and request
+  // If backend is served over HTTPS (production/behind proxy) we must use SameSite=None and Secure=true
+  const forwardedProto = req.headers['x-forwarded-proto'];
+  const isRequestOverHttps = req.secure || (forwardedProto && forwardedProto.includes('https')) || process.env.NODE_ENV === 'production';
+
+  const cookieOptions = {
     httpOnly: true,
-    sameSite: "lax",
-    secure: false,
-  });
-  //send res
-  res.status(200).json({ message: "login success", payload: user });
+    secure: !!isRequestOverHttps,
+    sameSite: isRequestOverHttps ? 'none' : 'lax',
+  };
+
+  // save token as httpOnly cookie
+  res.cookie('token', token, cookieOptions);
+  //send res (include token in body so non-cookie clients can use Authorization)
+  res.status(200).json({ message: "login success", payload: user, token });
 });
 
 //logout for User, Author and Admin
 commonRouter.get("/logout", (req, res) => {
   // Clear the cookie named 'token'
-  res.clearCookie("token", {
-    httpOnly: true, // Must match original  settings
-    secure: false, // Must match original  settings
-    sameSite: "lax", // Must match original  settings
-  });
+  const forwardedProto = req.headers['x-forwarded-proto'];
+  const isRequestOverHttps = req.secure || (forwardedProto && forwardedProto.includes('https')) || process.env.NODE_ENV === 'production';
+
+  const cookieOptions = {
+    httpOnly: true,
+    secure: !!isRequestOverHttps,
+    sameSite: isRequestOverHttps ? 'none' : 'lax',
+  };
+
+  res.clearCookie('token', cookieOptions);
 
   res.status(200).json({ message: "Logged out successfully" });
 });
