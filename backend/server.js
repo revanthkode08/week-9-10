@@ -26,10 +26,15 @@ const PORT = process.env.PORT || 10000;
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://week-9-10-six.vercel.app"
-    ],
+    origin: function (origin, callback) {
+      if (!origin || /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) {
+        return callback(null, true);
+      }
+      if (origin.startsWith('https://week-9-10') && origin.endsWith('.vercel.app')) {
+        return callback(null, true);
+      }
+      callback(new Error('Not allowed by CORS'));
+    },
     credentials: true
   })
 );
