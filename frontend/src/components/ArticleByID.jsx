@@ -168,8 +168,8 @@ function ArticleByID() {
       )}
 
       {/* comments */}
-      {article.comments.map((comment) => (
-        <div className="bg-gray-300 p-6 rounded-2xl mt-4">
+      {article.comments.map((comment, index) => (
+        <div key={index} className="bg-gray-800 text-gray-200 p-6 rounded-2xl mt-4">
           <p className="uppercase text-pink-400 font-bold mb-3">
           {comment.user?.email}
           </p>
