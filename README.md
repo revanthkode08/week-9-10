@@ -33,9 +33,8 @@ Deployment notes:
 Final deployment structure:
 
 Frontend (Vercel)
-↓
-https://your-project.vercel.app
-
+↓ 
+https://week-9-10-xzve.vercel.app/
 Backend (Render)
 ↓
 https://week-9-10-kn3e.onrender.com
