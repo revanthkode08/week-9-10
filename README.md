@@ -15,7 +15,7 @@ Tech stack:
 - Database: MongoDB Atlas
 
 Live URLs:
-- Frontend: (deploy to Vercel) https://your-project.vercel.app
+- Frontend: (deploy to Vercel) https://week-9-10-xzve.vercel.app/
 - Backend: https://week-9-10-kn3e.onrender.com
 
 Installation (local):
